@@ -5,22 +5,78 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/aeonyxio/math2d"
 	"github.com/lxn/win"
 )
 
-type Mouse int
+type mouseButton int
 
 const (
-    LEFT Mouse = iota
+    LEFT mouseButton = iota
     RIGHT
     MIDDLE
 )
 
-func Move(x, y int){
+type Mouse struct {
+}
+
+func New() *Mouse {
+	return &Mouse{}
+}
+
+func (mouse *Mouse) Move(x, y int){
 	win.SetCursorPos(int32(x), int32(y))
 }
 
-func MouseDown(mouse Mouse) {  
+func (mouse *Mouse) GetPosition() *math2d.Point {
+	point := &win.POINT{}
+	win.GetCursorPos(point)
+	return &math2d.Point{X: int(point.X), Y: int(point.Y)}
+}
+
+func (mouse *Mouse) RightPress(){
+	mouseDown(RIGHT)
+}
+
+func (mouse *Mouse) RightRelease(){
+	mouseUp(RIGHT)
+}
+
+func (mouse *Mouse) RightClick(){
+	mouse.RightPress()
+    time.Sleep(20 * time.Millisecond)
+	mouse.RightRelease()
+}
+
+func (mouse *Mouse) MiddlePress(){
+	mouseDown(MIDDLE)
+}
+
+func (mouse *Mouse) MiddleRelease(){
+	mouseUp(MIDDLE)
+}
+
+func (mouse *Mouse) MiddleClick(){
+	mouse.MiddlePress()
+    time.Sleep(20 * time.Millisecond)
+	mouse.MiddleRelease()
+}
+
+func (mouse *Mouse) Press(){
+	mouseDown(LEFT)
+}
+
+func (mouse *Mouse) Release(){
+	mouseUp(LEFT)
+}
+
+func (mouse *Mouse) Click(){
+	mouse.Press()
+    time.Sleep(20 * time.Millisecond)
+	mouse.Release()
+}
+
+func mouseDown(mouse mouseButton) {  
 	in := []win.MOUSE_INPUT{
 		{
 			Type: win.INPUT_MOUSE,
@@ -42,7 +98,7 @@ func MouseDown(mouse Mouse) {
     win.SendInput(1,  unsafe.Pointer(&in[0]), int32(unsafe.Sizeof(in[0])));
 }
 
-func MouseUp(mouse Mouse) {  
+func mouseUp(mouse mouseButton) {  
 	in := []win.MOUSE_INPUT{
 		{
 			Type: win.INPUT_MOUSE,
@@ -62,22 +118,4 @@ func MouseUp(mouse Mouse) {
     }
 
     win.SendInput(1,  unsafe.Pointer(&in[0]), int32(unsafe.Sizeof(in[0])));
-}
-
-func RightClick(){
-	MouseDown(RIGHT)
-    time.Sleep(20 * time.Millisecond)
-	MouseUp(RIGHT)
-}
-
-func MiddleClick(){
-	MouseDown(MIDDLE)
-    time.Sleep(20 * time.Millisecond)
-	MouseUp(MIDDLE)
-}
-
-func Click(){
-	MouseDown(LEFT)
-    time.Sleep(20 * time.Millisecond)
-	MouseUp(LEFT)
 }
